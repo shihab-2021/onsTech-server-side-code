@@ -103,10 +103,30 @@ async function run() {
     });
 
     // for all products
+    // app.get("/products", async (req, res) => {
+    //   const cursor = productsCollection.find({});
+    //   const services = await cursor.toArray();
+    //   res.json(services);
+    // });
+
     app.get("/products", async (req, res) => {
       const cursor = productsCollection.find({});
-      const services = await cursor.toArray();
-      res.json(services);
+      const page = req.query.page;
+      const size = parseInt(req.query.size);
+      let result;
+      if (page) {
+        result = await cursor
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+      } else {
+        result = await cursor.toArray();
+      }
+      const count = await cursor.count();
+      res.send({
+        count,
+        result,
+      });
     });
 
     // for single product
